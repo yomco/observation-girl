@@ -9,7 +9,7 @@
 :root{--bg:#202321;--panel:rgba(25,28,27,.82);--line:rgba(255,255,255,.38);--text:#f1f2ef;--muted:#b9beb9;--accent:#e9ece7}
 *{box-sizing:border-box}html,body{margin:0;background:#111;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;height:100%}
 body{display:flex;justify-content:center;overflow:hidden}.app{position:relative;width:min(100vw,520px);height:100dvh;background:#252a28;overflow:hidden}
-.scene{position:absolute;inset:0;background-image:url('room-0712.png');background-size:cover;background-position:center;transition:filter .6s,opacity .6s,transform .6s}.scene.evening{filter:brightness(.52) saturate(.8) hue-rotate(8deg)}.scene.night{filter:brightness(.28) saturate(.65)}.scene.hidden{opacity:.12;filter:blur(3px) brightness(.25);transform:scale(1.02)}
+.scene{position:absolute;inset:0;background-image:url('room-0712.png');background-size:cover;background-position:center;transition:filter .6s,opacity .6s,transform .6s}.scene.evening{filter:brightness(.52) saturate(.8) hue-rotate(8deg)}.scene.night{filter:brightness(.28) saturate(.65)}.scene.empty{filter:brightness(.9) saturate(.82)}
 .topmask{position:absolute;left:0;right:0;top:0;height:190px;background:linear-gradient(#242725 0%,rgba(36,39,37,.96) 63%,rgba(36,39,37,0) 100%);pointer-events:none}.header{position:absolute;z-index:3;top:max(22px,env(safe-area-inset-top));left:22px;right:22px}.place{font-size:17px;letter-spacing:.08em}.place .num{font-variant-numeric:tabular-nums;margin-right:15px}.clock{font-size:48px;line-height:1.05;margin-top:16px;font-weight:300;letter-spacing:.02em;font-variant-numeric:tabular-nums}.date{font-size:14px;margin-top:8px;color:var(--muted);letter-spacing:.04em}.statusdot{position:absolute;right:0;top:4px;width:8px;height:8px;border-radius:99px;background:#dce8d9;box-shadow:0 0 0 5px rgba(220,232,217,.08)}
 .unseen{position:absolute;z-index:2;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:32px}.unseen.show{display:flex}.unseen .box{margin-top:-50px}.unseen .big{font-size:22px;letter-spacing:.12em}.unseen .small{margin-top:13px;color:var(--muted);font-size:14px;line-height:1.8}
 .bottommask{position:absolute;z-index:2;left:0;right:0;bottom:0;height:245px;background:linear-gradient(rgba(28,31,30,0),rgba(28,31,30,.92) 32%,#1d201f 100%);pointer-events:none}.status{position:absolute;z-index:4;left:18px;right:18px;bottom:calc(86px + env(safe-area-inset-bottom));background:rgba(31,34,33,.82);border:1px solid var(--line);border-radius:8px;padding:17px 18px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}.where{font-size:16px}.note{font-size:17px;margin-top:12px;line-height:1.5}.nav{position:absolute;z-index:5;left:0;right:0;bottom:0;height:calc(78px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);display:grid;grid-template-columns:repeat(4,1fr);background:rgba(25,28,27,.96);border-top:1px solid rgba(255,255,255,.08)}button{font:inherit;color:inherit}.nav button{background:none;border:0;color:#aeb3af;padding:10px 2px 7px;display:flex;flex-direction:column;align-items:center;gap:4px}.nav button.active{color:white}.ico{font-size:24px;line-height:1}.lab{font-size:12px}
@@ -19,33 +19,33 @@ body{display:flex;justify-content:center;overflow:hidden}.app{position:relative;
 </head>
 <body><main class="app">
 <div id="scene" class="scene"></div><div class="topmask"></div>
-<header class="header"><div class="place"><span class="num">01</span>自室</div><span class="statusdot"></span><div id="clock" class="clock">07:12</div><div id="date" class="date"></div></header>
-<div id="unseen" class="unseen"><div class="box"><div class="big">観測範囲外</div><div id="unseenText" class="small">現在地：学校<br>この場所からは見えない。</div></div></div>
-<div class="bottommask"></div><section class="status"><div id="where" class="where">現在地：自室</div><div id="note" class="note">まだ寝ているようだ。</div></section>
-<nav class="nav"><button class="active" data-sheet="none"><span class="ico">◉</span><span class="lab">観測</span></button><button data-sheet="diary"><span class="ico">▢</span><span class="lab">日記</span></button><button data-sheet="record"><span class="ico">▥</span><span class="lab">記録</span></button><button data-sheet="settings"><span class="ico">⚙︎</span><span class="lab">設定</span></button></nav>
+<header class="header"><div class="place"><span class="num">01</span>自室</div><div id="clock" class="clock">07:12</div><div id="date" class="date"></div></header>
+
+<div class="bottommask"></div><section id="status" class="status"><div id="note" class="note">まだ寝ている。</div></section>
+<nav class="nav"><button class="active" data-sheet="none"><span class="ico">◉</span><span class="lab">部屋</span></button><button data-sheet="diary"><span class="ico">▢</span><span class="lab">日記</span></button><button data-sheet="record"><span class="ico">▥</span><span class="lab">記録</span></button><button data-sheet="settings"><span class="ico">⚙︎</span><span class="lab">設定</span></button></nav>
 <div id="sheet" class="sheet"><div class="card"><div class="handle"></div><button class="close" id="close">閉じる</button><div id="sheetBody"></div></div></div>
 </main>
 <script>
 const $=s=>document.querySelector(s); let demo=null;
 const states=[
-{from:0,to:5.5,loc:'自室',note:'眠っている。',view:true,cls:'night'},
-{from:5.5,to:7.35,loc:'自室',note:'まだ寝ているようだ。',view:true,cls:''},
-{from:7.35,to:7.7,loc:'自室',note:'ようやく起き上がった。',view:true,cls:''},
-{from:7.7,to:8.05,loc:'自室',note:'身支度をしている。',view:true,cls:''},
-{from:8.05,to:8.35,loc:'通学中',note:'この場所からは観測できない。',view:false},
-{from:8.35,to:15.5,loc:'学校',note:'この場所からは観測できない。',view:false},
-{from:15.5,to:18.35,loc:'学校・部活動',note:'この場所からは観測できない。',view:false},
-{from:18.35,to:19.15,loc:'帰宅中',note:'この場所からは観測できない。',view:false},
-{from:19.15,to:22.1,loc:'自室',note:'机に向かっている。',view:true,cls:'evening'},
-{from:22.1,to:23.2,loc:'自室',note:'作曲アプリを開いている。',view:true,cls:'night'},
-{from:23.2,to:24,loc:'自室',note:'もう寝たようだ。',view:true,cls:'night'}];
+{from:0,to:5.5,note:'眠っている。',view:true,cls:'night'},
+{from:5.5,to:7.35,note:'まだ寝ている。',view:true,cls:''},
+{from:7.35,to:7.7,note:'起きた。',view:true,cls:''},
+{from:7.7,to:8.05,note:'出かける支度をしている。',view:true,cls:''},
+{from:8.05,to:8.35,note:'',view:false},
+{from:8.35,to:15.5,note:'',view:false},
+{from:15.5,to:18.35,note:'',view:false},
+{from:18.35,to:19.15,note:'',view:false},
+{from:19.15,to:22.1,note:'帰っている。',view:true,cls:'evening'},
+{from:22.1,to:23.2,note:'机に向かっている。',view:true,cls:'night'},
+{from:23.2,to:24,note:'眠っている。',view:true,cls:'night'}];
 function now(){if(!demo)return new Date();let d=new Date();d.setHours(demo.h,demo.m,0,0);return d}
 function fmtDate(d){return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} (${['SUN','MON','TUE','WED','THU','FRI','SAT'][d.getDay()]})`}
-function render(){let d=now(),h=d.getHours()+d.getMinutes()/60,s=states.find(x=>h>=x.from&&h<x.to)||states[0];$('#clock').textContent=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;$('#date').textContent=fmtDate(d);$('#where').textContent=`現在地：${s.loc}`;$('#note').textContent=s.note;$('#unseenText').innerHTML=`現在地：${s.loc}<br>この場所からは見えない。`;$('#unseen').classList.toggle('show',!s.view);$('#scene').className='scene'+(s.view?(' '+(s.cls||'')):' hidden')}
+function render(){let d=now(),h=d.getHours()+d.getMinutes()/60,s=states.find(x=>h>=x.from&&h<x.to)||states[0];$('#clock').textContent=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;$('#date').textContent=fmtDate(d);$('#note').textContent=s.note;$('#status').style.display=s.note?'block':'none';$('#scene').className='scene'+(s.view?(' '+(s.cls||'')):' empty')}
 setInterval(render,1000);render();
-const diaryHTML=`<div class="title">日記</div><div class="diary"><div class="d">9月6日</div>朝、また少し寝すぎた。<br>授業中に昨日のリズムの続きが浮かんだ。<br><br>帰ってからアプリで少しだけ形にした。<br>まだ誰にも聴かせたくない。</div><div class="caption">日記には、観測画面では分からなかったことが少しだけ残る。でも全部は書かれない。</div>`;
-const recordHTML=`<div class="title">観測記録</div><div class="caption">07:12　自室　眠っている<br>07:34　自室　起き上がる<br>08:03　観測範囲外<br>19:18　自室　帰宅を確認</div><div class="caption">記録は「見えたこと」だけ。感情や理由は記録しない。</div>`;
-const settingsHTML=`<div class="title">設定 / デモ</div><div class="settings"><button data-time="live">現在時刻に戻す</button><button data-time="7:12">07:12　朝・自室</button><button data-time="8:30">08:30　通学 / 学校</button><button data-time="16:30">16:30　部活動</button><button data-time="19:40">19:40　帰宅後</button><button data-time="22:25">22:25　作曲中</button></div><div class="caption">これは確認用の時刻切替です。完成版では通常、現実の時刻に同期します。</div>`;
+const diaryHTML=`<div class="title">日記</div><div class="diary"><div class="d">9月6日</div>朝、また少し寝すぎた。<br>授業中に昨日のリズムの続きが浮かんだ。<br><br>帰ってからアプリで少しだけ形にした。<br>まだ誰にも聴かせたくない。</div><div class="caption">書かれていることが、すべてとは限らない。</div>`;
+const recordHTML=`<div class="title">記録</div><div class="caption">07:12　眠っていた<br>07:34　起きた<br>08:03　部屋からいなくなった<br>19:18　戻っていた</div><div class="caption">ここに残るのは、部屋で見えたことだけ。</div>`;
+const settingsHTML=`<div class="title">設定 / デモ</div><div class="settings"><button data-time="live">現在時刻に戻す</button><button data-time="7:12">07:12　朝・自室</button><button data-time="8:30">08:30　誰もいない部屋</button><button data-time="16:30">16:30　誰もいない部屋</button><button data-time="19:40">19:40　帰宅後</button><button data-time="22:25">22:25　作曲中</button></div><div class="caption">これは確認用の時刻切替です。完成版では通常、現実の時刻に同期します。</div>`;
 function openSheet(type){if(type==='none')return;$('#sheetBody').innerHTML=type==='diary'?diaryHTML:type==='record'?recordHTML:settingsHTML;$('#sheet').classList.add('open');document.querySelectorAll('[data-time]').forEach(b=>b.onclick=()=>{if(b.dataset.time==='live')demo=null;else{let [h,m]=b.dataset.time.split(':').map(Number);demo={h,m}}render();$('#sheet').classList.remove('open')})}
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>openSheet(b.dataset.sheet));$('#close').onclick=()=>$('#sheet').classList.remove('open');$('#sheet').onclick=e=>{if(e.target===$('#sheet'))$('#sheet').classList.remove('open')};
 </script></body></html>
